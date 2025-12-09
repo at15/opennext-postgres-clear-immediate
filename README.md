@@ -1,47 +1,52 @@
-# OpenNext Starter
+# OpenNextJs + Postgres clearImmediate already been declared
 
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+A repro for using `postgres.js` with opennextjs.
 
-## Getting Started
+## How
 
-Read the documentation at https://opennext.js.org/cloudflare.
+If you use follow the doc https://opennext.js.org/cloudflare/howtos/workerd
+and add `serverExternalPackages: ["postgres"],` to your `next.config.ts` 
+You will get the following error when doing `opennextjs-cloudflare build`:
 
-## Develop
+```
+✘ [ERROR] Build failed with 1 error:
 
-Run the Next.js development server:
+  ✘ [ERROR] The symbol "clearImmediate" has already been
+  declared
 
-```bash
-npm run dev
-# or similar package manager command
+      .open-next/server-functions/default/handler.mjs:289:40384:
+        289 │ ...lete(id))}),id}function clearImmediate(id){tasks.delete(id)}va...
+            ╵                            ~~~~~~~~~~~~~~
+
+    The symbol "clearImmediate" was originally declared here:
+
+      .open-next/server-functions/default/handler.mjs:1:76:
+        1 │ ...out, clearTimeout, setImmediate, clearImmediate} from "node:timers"
+          ╵                                     ~~~~~~~~~~~~~~
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Why
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- `clearImmediate` is imported from `node:timers` by opennextjs
+- `postgres.js` define the `clearImmediate` function it the cloudflare polyfill.
 
-## Preview
+From https://github.com/opennextjs/opennextjs-cloudflare/blame/721bff023068c93bba830fe897de8314e71b3a5b/packages/cloudflare/src/cli/build/bundle-server.ts#L155
 
-Preview the application locally on the Cloudflare runtime:
-
-```bash
-npm run preview
-# or similar package manager command
+```ts
+banner: {
+  // We need to import them here, assigning them to `globalThis` does not work because node:timers use `globalThis` and thus create an infinite loop
+  // See https://github.com/cloudflare/workerd/blob/d6a764c/src/node/internal/internal_timers.ts#L56-L70
+  js: `import {setInterval, clearInterval, setTimeout, clearTimeout, setImmediate, clearImmediate} from "node:timers"`,
+},
+platform: "node",
 ```
 
-## Deploy
+`postgres.js` define the `clearImmediate` function it the polyfill.
 
-Deploy the application to Cloudflare:
+https://github.com/porsager/postgres/blob/master/cf/polyfills.js#L231-L233
 
-```bash
-npm run deploy
-# or similar package manager command
+```js
+function clearImmediate(id) {
+  tasks.delete(id)
+}
 ```
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
