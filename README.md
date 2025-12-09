@@ -50,3 +50,9 @@ function clearImmediate(id) {
   tasks.delete(id)
 }
 ```
+
+## Solution
+
+Right now, what's working for me is remove `serverExternalPackages: ["postgres"],` from my `next.config.ts`
+
+The `WRANGLER_BUILD_PLATFORM="node"` from https://opennext.js.org/cloudflare/troubleshooting#my-app-fails-to-build-when-i-import-a-specific-npm-package does not work me ...
