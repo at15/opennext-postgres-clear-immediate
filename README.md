@@ -1,6 +1,7 @@
 # OpenNextJs + Postgres clearImmediate already been declared
 
 A repro for using `postgres.js` with opennextjs.
+The issue is https://github.com/opennextjs/opennextjs-cloudflare/issues/1036
 
 ## How
 
