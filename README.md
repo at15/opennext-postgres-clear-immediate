@@ -3,6 +3,8 @@
 A repro for using `postgres.js` with opennextjs.
 The issue is https://github.com/opennextjs/opennextjs-cloudflare/issues/1036
 
+NOTE: Upgrade @opennextjs/cloudflare to 1.14.9 would fix the issue.
+
 ## How
 
 If you use follow the doc https://opennext.js.org/cloudflare/howtos/workerd
